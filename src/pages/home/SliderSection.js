@@ -17,7 +17,7 @@ const Slider = () => {
                             Bộ Sưu Tập Mới 2024
                         </span>
                         <h1 className="display-2 font-weight-bold text-white mb-4" style={{ lineHeight: 1.1, letterSpacing: '-1px' }}>
-                            GIÀY CHÍNH HÃNG <br />
+                            GIÀY FAKE LÕ <br />
                             <span className="text-outline-white" style={{ WebkitTextStroke: '1px #fff', color: 'transparent' }}>PHONG CÁCH ĐỈNH CAO</span>
                         </h1>
                         <p className="lead text-gray-400 mb-5 text-light" style={{ maxWidth: '480px', opacity: 0.8 }}>
