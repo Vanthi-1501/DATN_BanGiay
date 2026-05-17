@@ -136,7 +136,7 @@ const Header = () => {
 					<div className="d-flex align-items-center gap-4">
 						{user ? (
 							<div className="dropdown">
-								<a href="#" className="d-flex align-items-center text-dark text-decoration-none dropdown-toggle no-caret" data-toggle="dropdown">
+								<a href="#!" className="d-flex align-items-center text-dark text-decoration-none dropdown-toggle no-caret" data-toggle="dropdown">
 									<div className="bg-light rounded-circle d-flex align-items-center justify-content-center hover-lift" style={{ width: '42px', height: '42px' }}>
 										<i className="fa fa-user" style={{ fontSize: '18px' }}></i>
 									</div>
@@ -148,7 +148,7 @@ const Header = () => {
 									</div>
 									<div className="dropdown-divider my-2"></div>
 									<Link className="dropdown-item rounded-pill py-2" to="/profile">Hồ sơ cá nhân</Link>
-									<Link className="dropdown-item rounded-pill py-2 text-danger" to="#" onClick={logout}>Đăng xuất</Link>
+									<Link className="dropdown-item rounded-pill py-2 text-danger" to="#!" onClick={(e) => { e.preventDefault(); logout(); }}>Đăng xuất</Link>
 								</div>
 							</div>
 						) : (

@@ -1,5 +1,6 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
+import { AuthenticateWithRedirectCallback } from "@clerk/clerk-react";
 import Home from "./Home";
 import Login from "../pages/user/Login";
 import Register from "../pages/user/Register";
@@ -15,10 +16,15 @@ import Checkout from "../pages/cart/Checkout";
 import PaymentSuccess from "../pages/payment/PaymentSuccess";
 import PaymentFailure from "../pages/payment/PaymentFailure";
 import OrderHistory from "../pages/user/OrderHistory";
+import ForgotPassword from "../pages/user/ForgotPassword";
+import VerifyCode from "../pages/user/VerifyCode";
+import ResetPassword from "../pages/user/ResetPassword";
+import OrderDetail from "../pages/user/OrderDetail";
 
 const Main = () => (
   <main>
     <Routes>
+      <Route path="/sso-callback" element={<AuthenticateWithRedirectCallback />} />
       <Route path="/" element={<Home />} />
       <Route path="/home-page-2" element={<Home2 />} />
       <Route path="/listing" element={<Listing />} />
@@ -36,6 +42,10 @@ const Main = () => (
       <Route path="/profile-orders" element={<OrderHistory />} />
       <Route path="/payment-success" element={<PaymentSuccess />} />
       <Route path="/payment-failure" element={<PaymentFailure />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/verify-code" element={<VerifyCode />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/order-detail/:orderId" element={<OrderDetail />} />
     </Routes>
   </main>
 );

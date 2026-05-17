@@ -52,7 +52,7 @@ const DealGrid = () => {
                             <div className="card card-sm card-product-grid">
                                 <Link to={`/product-detail/${product.productId || product.id}`} className="img-wrap">
                                     {/* <b className="badge badge-danger mr-1">10% OFF</b> */}
-                                    <img src={imageSrc} alt={product.productName} style={{ objectFit: 'contain' }} />
+                                    <img src={imageSrc} alt={product.productName} style={{ objectFit: 'cover' }} />
                                 </Link>
                                 <figcaption className="info-wrap">
                                     <Link to={`/product-detail/${product.productId || product.id}`} className="title">{product.productName}</Link>

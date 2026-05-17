@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
     return (
-        <footer className="section-footer bg-secondary text-white">
+        <footer className="section-footer border-top" style={{ backgroundColor: 'var(--bg-footer)', color: 'var(--color-text-main)' }}>
             <div className="container">
                 <section className="footer-top padding-y-lg">
                     <div className="row">
@@ -48,12 +48,12 @@ const Footer = () => {
                                 <button className="btn ml-2 btn-warning"> Đăng ký</button>
                             </form>
 
-                            <p className="text-white-50 mb-2">Kết nối với chúng tôi</p>
+                            <p className="text-muted mb-2">Kết nối với chúng tôi</p>
                             <div>
-                                <Link to="#" className="btn btn-icon btn-outline-light"><i className="fab fa-facebook-f"></i></Link>
-                                <Link to="#" className="btn btn-icon btn-outline-light"><i className="fab fa-twitter"></i></Link>
-                                <Link to="#" className="btn btn-icon btn-outline-light"><i className="fab fa-instagram"></i></Link>
-                                <Link to="#" className="btn btn-icon btn-outline-light"><i className="fab fa-youtube"></i></Link>
+                                <a href="https://www.facebook.com/thi.van.336441" target="_blank" rel="noreferrer" className="btn btn-icon btn-outline-dark"><i className="fab fa-facebook-f"></i></a>
+                                <Link to="#" className="btn btn-icon btn-outline-dark"><i className="fab fa-twitter"></i></Link>
+                                <a href="https://www.instagram.com/thivannnn_151/?hl=vi" target="_blank" rel="noreferrer" className="btn btn-icon btn-outline-dark"><i className="fab fa-instagram"></i></a>
+                                <a href="http://youtube.com/@NHoangNhiA" target="_blank" rel="noreferrer" className="btn btn-icon btn-outline-dark"><i className="fab fa-youtube"></i></a>
                             </div>
 
                         </aside>
@@ -61,7 +61,7 @@ const Footer = () => {
                 </section>
 
                 <section className="footer-bottom text-center">
-                    <p className="text-white">Chính sách bảo mật - Điều khoản sử dụng - Hướng dẫn mua hàng</p>
+                    <p className="text-dark">Chính sách bảo mật - Điều khoản sử dụng - Hướng dẫn mua hàng</p>
                     <p className="text-muted"> &copy; 2025 Alistyle, Bảo lưu mọi quyền </p>
                     <br />
                 </section>

@@ -35,6 +35,23 @@ const Profile = () => {
 
     useEffect(() => {
         const userId = user?.id || user?.userId;
+
+        // If logged in via Google (Clerk), use context data only, skip backend fetch
+        if (user?.loginType === "GOOGLE") {
+            setFormData({
+                firstName: user.firstName || '',
+                lastName: user.lastName || '',
+                email: user.email || '',
+                mobileNumber: user.mobileNumber || '',
+                address: user.address || '',
+                city: user.city || '',
+                country: user.country || 'Vietnam'
+            });
+            // Google avatar is handled by Clerk usually, but for now specific flow:
+            // setAvatar(user.imageUrl); // If we mapped it.
+            return;
+        }
+
         if (userId) {
             // Fetch fresh data from API
             fetch(`http://127.0.0.1:8080/api/public/users/${userId}`)
@@ -146,6 +163,37 @@ const Profile = () => {
             };
 
             const userId = user.id || user.userId;
+
+            // FIX: If Google User, do not call Backend (incompatible ID type). 
+            // Update local state only.
+            if (user.loginType === "GOOGLE") {
+                // Simulate network delay
+                await new Promise(r => setTimeout(r, 500));
+
+                const updatedUser = {
+                    ...user,
+                    firstName: payload.firstName,
+                    lastName: payload.lastName,
+                    mobileNumber: payload.mobileNumber,
+                    city: finalCity,
+                    addressLine: finalAddressLine, // Map to addressLine or address object as needed
+                    address: finalAddressLine,
+                    country: payload.country
+                };
+
+                // Update local context
+                login(localStorage.getItem("authToken"), updatedUser);
+                alert("Cập nhật thông tin thành công! (Lưu cục bộ)");
+
+                // Reset address selection
+                setSelectedProvinceCode("");
+                setSelectedDistrictCode("");
+                setSelectedWardCode("");
+                setSpecificAddress("");
+                setLoading(false);
+                return;
+            }
+
             const response = await fetch(`http://127.0.0.1:8080/api/public/users/${userId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },

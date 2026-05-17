@@ -98,10 +98,10 @@ function Home(props) {
                         </div>
 
                         {/* Banner Widget (Optional) */}
-                        <div className="card bg-dark text-white border-0 shadow-sm mb-4 overflow-hidden position-relative">
+                        <div className="card bg-danger text-white border-0 shadow-sm mb-4 overflow-hidden position-relative">
                             <img
                                 src="https://images.unsplash.com/photo-1552346154-21d32810aba3?fit=crop&w=400&q=80"
-                                className="card-img opacity-50"
+                                className="card-img opacity-20"
                                 alt="Banner"
                                 style={{ height: '300px', objectFit: 'cover' }}
                             />
@@ -156,17 +156,17 @@ function Home(props) {
             </div>
 
             {/* Newsletter Section - Full Width Bottom */}
-            <section className="bg-dark text-white py-5">
+            <section className="py-5 border-top" style={{ backgroundColor: 'var(--bg-newsletter)' }}>
                 <div className="container">
                     <div className="row justify-content-center">
                         <div className="col-lg-8 text-center">
                             <h3 className="font-weight-bold text-uppercase mb-3">Tham Gia Cùng Chúng Tôi</h3>
-                            <p className="text-white-50 mb-4">Đăng ký để nhận thông tin mới nhất và ưu đãi độc quyền.</p>
+                            <p className="text-muted mb-4">Đăng ký để nhận thông tin mới nhất và ưu đãi độc quyền.</p>
                             <form className="form-inline justify-content-center">
                                 <div className="input-group" style={{ maxWidth: '500px', width: '100%' }}>
-                                    <input type="email" className="form-control rounded-pill-left border-0 py-4 pl-4" placeholder="Email của bạn..." />
+                                    <input type="email" className="form-control border-0 py-4 pl-4 shadow-sm" placeholder="Email của bạn..." style={{ borderRadius: '50px 0 0 50px' }} />
                                     <div className="input-group-append">
-                                        <button className="btn btn-light rounded-pill-right px-4 font-weight-bold text-dark" type="button">Đăng Ký</button>
+                                        <button className="btn btn-primary px-4 font-weight-bold" type="button" style={{ borderRadius: '0 50px 50px 0' }}>Đăng Ký</button>
                                     </div>
                                 </div>
                             </form>

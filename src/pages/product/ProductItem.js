@@ -28,7 +28,7 @@ const ProductItem = ({ product }) => {
                             src={imageStart}
                             alt={name}
                             className="w-100 h-100"
-                            style={{ objectFit: 'contain', transition: 'transform 0.5s ease', padding: '1rem' }}
+                            style={{ objectFit: 'cover', transition: 'transform 0.5s ease' }}
                             onError={(e) => { e.target.src = 'https://placehold.co/300x300/f0f0f0/666?text=No+Image'; }}
                         />
                     </Link>

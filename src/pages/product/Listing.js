@@ -158,7 +158,7 @@ const Listing = () => {
                         <div className="card border-0 shadow-sm">
                             <article className="filter-group">
                                 <header className="card-header bg-white border-bottom-0">
-                                    <a href="#" data-toggle="collapse" data-target="#collapse_1" aria-expanded="true" className="">
+                                    <a href="#!" data-toggle="collapse" data-target="#collapse_1" aria-expanded="true" className="" onClick={(e) => e.preventDefault()}>
                                         <i className="icon-control fa fa-chevron-down"></i>
                                         <h6 className="title">Danh mục</h6>
                                     </a>
@@ -193,7 +193,7 @@ const Listing = () => {
                                     <option>Rẻ nhất</option>
                                 </select>
                                 <div className="btn-group">
-                                    <Link to="#" className="btn btn-outline-secondary active" data-toggle="tooltip" title="Xem danh sách">
+                                    <Link to="#!" className="btn btn-outline-secondary active" data-toggle="tooltip" title="Xem danh sách" onClick={(e) => e.preventDefault()}>
                                         <i className="fa fa-bars"></i>
                                     </Link>
                                     <Link to="/listing-grid" className="btn  btn-outline-secondary" data-toggle="tooltip" title="Xem lưới">
@@ -223,7 +223,7 @@ const Listing = () => {
                                                     <img
                                                         src={imageSrc}
                                                         alt={product.productName}
-                                                        style={{ objectFit: 'contain' }}
+                                                        style={{ objectFit: 'cover' }}
                                                         onError={(e) => { e.target.src = 'https://placehold.co/150x150?text=No+Image'; }}
                                                     />
                                                 </Link>

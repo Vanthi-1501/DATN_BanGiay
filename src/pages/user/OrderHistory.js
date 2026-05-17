@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getOrdersByUser } from '../../services/apiService';
+import { getOrdersByEmail } from '../../services/apiService';
 import { Link } from 'react-router-dom';
 
 const OrderHistory = () => {
@@ -9,17 +9,35 @@ const OrderHistory = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user) {
+        const token = localStorage.getItem("authToken");
+        if (user && token) {
             fetchOrders();
+        } else if (!loading) {
+            setLoading(false);
         }
     }, [user]);
 
     const fetchOrders = async () => {
         try {
-            const data = await getOrdersByUser(user.id);
+            const token = localStorage.getItem("authToken");
+            if (!token) {
+                console.warn("⚠️ No auth token found, skipping fetchOrders");
+                return;
+            }
+
+            console.log("🔍 Fetching orders for user:", user);
+            console.log("📧 Email:", user.email);
+
+            // Use email instead of user.id to support both Google login and regular login
+            const data = await getOrdersByEmail(user.email);
+
+            console.log("📦 Orders received:", data);
+            console.log("📊 Number of orders:", data?.length || 0);
+
             setOrders(data);
         } catch (error) {
-            console.error("Error fetching orders:", error);
+            console.error("❌ Error fetching orders:", error);
+            console.error("Error details:", error.response?.data || error.message);
         } finally {
             setLoading(false);
         }
@@ -28,7 +46,7 @@ const OrderHistory = () => {
     if (loading) {
         return (
             <div className="container padding-y">
-                <div className="text-center">
+                <div className="text-center" style={{ paddingTop: '100px' }}>
                     <div className="spinner-border text-primary" role="status">
                         <span className="sr-only">Loading...</span>
                     </div>
@@ -106,9 +124,9 @@ const OrderHistory = () => {
                                             </thead>
                                             <tbody>
                                                 {orders.map(order => (
-                                                    <tr key={order.id}>
+                                                    <tr key={order.orderId}>
                                                         <td style={{ padding: '15px', verticalAlign: 'middle' }}>
-                                                            <strong>#{order.id}</strong>
+                                                            <strong>#{order.orderId}</strong>
                                                         </td>
                                                         <td style={{ padding: '15px', verticalAlign: 'middle' }}>
                                                             {new Date(order.orderDate).toLocaleDateString("vi-VN")}
@@ -120,7 +138,8 @@ const OrderHistory = () => {
                                                         </td>
                                                         <td style={{ padding: '15px', verticalAlign: 'middle' }}>
                                                             <span
-                                                                className={`badge badge-pill ${order.orderStatus === 'Order Placed' ? 'badge-success' :
+                                                                className={`badge badge-pill ${order.orderStatus === 'PAID' ? 'badge-success' :
+                                                                    order.orderStatus === 'Order Placed' ? 'badge-info' :
                                                                         order.orderStatus === 'CANCELLED' ? 'badge-danger' :
                                                                             'badge-warning'
                                                                     }`}

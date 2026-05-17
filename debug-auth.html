@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Debug Auth Flow</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .log {
+            background: #252526;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #007acc;
+        }
+
+        .error {
+            border-left-color: #f48771;
+        }
+
+        .success {
+            border-left-color: #89d185;
+        }
+
+        .warning {
+            border-left-color: #dcdcaa;
+        }
+
+        pre {
+            margin: 5px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Debug VNPay Google Login Auth</h1>
+
+    <div>
+        <h3>Step 1: Check Current State</h3>
+        <button onclick="checkState()">Check LocalStorage</button>
+        <button onclick="clearAll()">Clear All & Reload</button>
+    </div>
+
+    <div>
+        <h3>Step 2: Test Login</h3>
+        <input type="email" id="email" placeholder="Email" value="test@gmail.com" style="padding: 8px; width: 250px;">
+        <button onclick="testLogin()">Test Login</button>
+    </div>
+
+    <div>
+        <h3>Step 3: Test Create Order</h3>
+        <button onclick="testCreateOrder()">Test Create Order (with current token)</button>
+    </div>
+
+    <div id="output"></div>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:8080/api";
+        const DEFAULT_PASSWORD = "GoogleUser@123";
+
+        function log(message, type = 'log') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+
+            if (typeof message === 'object') {
+                div.innerHTML = `<pre>${JSON.stringify(message, null, 2)}</pre>`;
+            } else {
+                div.innerHTML = `<pre>${message}</pre>`;
+            }
+
+            output.insertBefore(div, output.firstChild);
+        }
+
+        function checkState() {
+            const token = localStorage.getItem('authToken');
+            const userInfo = localStorage.getItem('userInfo');
+
+            log('=== CURRENT STATE ===', 'log');
+            log(`Token: ${token ? token.substring(0, 50) + '...' : 'NULL'}`, token ? 'success' : 'error');
+            log(`Token Type: ${token?.startsWith('CLERK_SESSION_') ? 'CLERK SESSION (❌ WRONG!)' : token?.startsWith('eyJ') ? 'JWT (✅ CORRECT!)' : 'UNKNOWN'}`, token?.startsWith('eyJ') ? 'success' : 'warning');
+
+            if (userInfo) {
+                try {
+                    const user = JSON.parse(userInfo);
+                    log(`User: ${user.email} (ID: ${user.id})`, 'success');
+                } catch (e) {
+                    log('User Info Parse Error: ' + e.message, 'error');
+                }
+            } else {
+                log('No User Info', 'warning');
+            }
+        }
+
+        function clearAll() {
+            localStorage.clear();
+            log('✅ LocalStorage cleared!', 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+
+            log(`🔐 Testing Login for: ${email}`, 'log');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password: DEFAULT_PASSWORD })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    log('✅ Login Success!', 'success');
+                    log(data, 'success');
+
+                    if (data.token) {
+                        localStorage.setItem('authToken', data.token);
+                        log(`🔑 Token saved: ${data.token.substring(0, 50)}...`, 'success');
+                    } else {
+                        log('❌ No token in response!', 'error');
+                    }
+                } else {
+                    log('❌ Login Failed:', 'error');
+                    log(data, 'error');
+                }
+            } catch (error) {
+                log('❌ Network Error: ' + error.message, 'error');
+            }
+        }
+
+        async function testCreateOrder() {
+            const token = localStorage.getItem('authToken');
+
+            if (!token) {
+                log('❌ No token found! Login first.', 'error');
+                return;
+            }
+
+            log(`🛒 Testing Create Order with token: ${token.substring(0, 30)}...`, 'log');
+
+            const testOrder = {
+                userId: 1,
+                customerName: "Test User",
+                email: "test@gmail.com",
+                phone: "0123456789",
+                address: "Test Address",
+                totalAmount: 100000,
+                note: "Test order",
+                paymentMethod: "VNPAY",
+                items: [
+                    {
+                        productId: 1,
+                        quantity: 1,
+                        price: 100000
+                    }
+                ]
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(testOrder)
+                });
+
+                log(`Response Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+
+                if (response.status === 401) {
+                    log('❌ UNAUTHORIZED - Token is invalid or expired!', 'error');
+                    log('Token used: ' + token.substring(0, 50) + '...', 'error');
+                }
+
+                const data = await response.json();
+                log(data, response.ok ? 'success' : 'error');
+
+                if (response.ok) {
+                    log('✅ Order Created Successfully!', 'success');
+                } else {
+                    log('❌ Order Creation Failed', 'error');
+                }
+            } catch (error) {
+                log('❌ Network Error: ' + error.message, 'error');
+            }
+        }
+
+        // Auto-check on load
+        window.onload = () => {
+            checkState();
+        };
+    </script>
+</body>
+
+</html>

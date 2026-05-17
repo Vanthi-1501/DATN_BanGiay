@@ -66,6 +66,18 @@ export function REGISTER(body) {
     return callApi("/auth/register", "POST", body);
 }
 
+export function FORGOT_PASSWORD(email) {
+    return callApi("/public/auth/forgot-password", "POST", { email });
+}
+
+export function VERIFY_RESET_CODE(email, code) {
+    return callApi("/public/auth/verify-reset-code", "POST", { email, code });
+}
+
+export function RESET_PASSWORD(resetSession, newPassword) {
+    return callApi("/public/auth/reset-password", "POST", { resetSession, newPassword });
+}
+
 /* --- PUBLIC HELPERS (tuỳ bạn dùng) --- */
 export const getAllAddresses = () => GET_ALL("/public/addresses");
 export const getAllCategories = (params) => GET_ALL("/public/categories", params);
@@ -94,6 +106,10 @@ export function confirmVnpayReturn(queryObj) {
 
 export function getOrdersByUser(userId) {
     return GET_ALL(`/orders/user/${userId}`);
+}
+
+export function getOrdersByEmail(email) {
+    return GET_ALL(`/orders/email/${encodeURIComponent(email)}`);
 }
 
 /* --- SMART SEARCH --- */

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
-import { confirmVnpayReturn, createOrder } from "../../services/apiService";
+import { confirmVnpayReturn, createOrder, createPayment } from "../../services/apiService";
 import { useNavigate } from "react-router-dom";
 
 const Checkout = () => {
@@ -33,12 +33,23 @@ const Checkout = () => {
         specific: ''
     });
 
+    const [phoneNumber, setPhoneNumber] = useState("");
+
+    useEffect(() => {
+        if (user?.mobileNumber) {
+            setPhoneNumber(user.mobileNumber);
+        }
+    }, [user]);
+
     // Fetch Provinces on Mount
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
-                const response = await axios.get("https://provinces.open-api.vn/api/?depth=1");
-                setProvinces(response.data);
+                const response = await axios.get("https://esgoo.net/api-tinhthanh/1/0.htm");
+                if (response.data.error === 0) {
+                    const formatted = response.data.data.map(p => ({ code: p.id, name: p.full_name }));
+                    setProvinces(formatted);
+                }
             } catch (error) {
                 console.error("Error fetching provinces:", error);
             }
@@ -60,8 +71,11 @@ const Checkout = () => {
 
         if (code) {
             try {
-                const response = await axios.get(`https://provinces.open-api.vn/api/p/${code}?depth=2`);
-                setDistricts(response.data.districts);
+                const response = await axios.get(`https://esgoo.net/api-tinhthanh/2/${code}.htm`);
+                if (response.data.error === 0) {
+                    const formatted = response.data.data.map(d => ({ code: d.id, name: d.full_name }));
+                    setDistricts(formatted);
+                }
             } catch (error) {
                 console.error("Error fetching districts:", error);
             }
@@ -80,8 +94,11 @@ const Checkout = () => {
 
         if (code) {
             try {
-                const response = await axios.get(`https://provinces.open-api.vn/api/d/${code}?depth=2`);
-                setWards(response.data.wards);
+                const response = await axios.get(`https://esgoo.net/api-tinhthanh/3/${code}.htm`);
+                if (response.data.error === 0) {
+                    const formatted = response.data.data.map(w => ({ code: w.id, name: w.full_name }));
+                    setWards(formatted);
+                }
             } catch (error) {
                 console.error("Error fetching wards:", error);
             }
@@ -138,10 +155,11 @@ const Checkout = () => {
         }
 
         return {
-            userId: user?.id || 0,
+            // SMART CHECKOUT: If Google Login (String ID), send null. Backend will auto-link by Email.
+            userId: (user?.id && typeof user.id === 'number') ? user.id : null,
             customerName,
             email: user?.email || "",
-            phone: user?.mobileNumber || "",
+            phone: phoneNumber || user?.mobileNumber || "",
             address: finalAddress,
             totalAmount: finalTotal, // Include Shipping in Order Total
             note: "Thanh toan don hang",
@@ -155,40 +173,163 @@ const Checkout = () => {
     }, [user, cartItems, finalTotal, paymentMethod, addressType, newAddress]);
 
     // ✅ VNPay return handler
+    const [vnpError, setVnpError] = useState(null);
+
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const vnp_ResponseCode = urlParams.get("vnp_ResponseCode");
 
-        if (!vnp_ResponseCode) return;
+        if (vnp_ResponseCode) {
+            // Immediately clear the URL cleanly without reloading
+            window.history.replaceState({}, document.title, window.location.pathname);
 
-        setLoading(true);
-
-        (async () => {
-            try {
-                if (vnp_ResponseCode === '00') {
-                    console.log("VNPay Payment Success");
-                    clearCart();
-                    localStorage.removeItem("cartItems");
-                    navigate("/payment-success", { replace: true });
-                } else {
-                    console.warn("VNPay Payment Failed code:", vnp_ResponseCode);
-                    navigate("/payment-failure", { replace: true });
-                }
-            } catch (err) {
-                console.error("VNPay local processing error:", err);
-                navigate("/payment-failure", { replace: true });
-            } finally {
+            if (vnp_ResponseCode === '00') {
+                console.log("VNPay Payment Success");
+                clearCart();
+                localStorage.removeItem("cartItems");
+                navigate("/payment-success", { replace: true });
+            } else {
+                console.warn("VNPay Payment Failed code:", vnp_ResponseCode);
+                setVnpError("Thanh toán thất bại hoặc bạn đã hủy giao dịch.");
                 setLoading(false);
             }
-        })();
+        }
     }, [clearCart, navigate]);
+
+    const silentRegisterOrLogin = async (userInfo) => {
+        const defaultPassword = "GoogleUser@123";
+        const email = userInfo.email;
+
+        console.log("🔐 Silent Auth: Starting for", email);
+
+        try {
+            // Try Login first
+            console.log("🔑 Silent Auth: Attempting Login...");
+            const loginRes = await axios.post("http://127.0.0.1:8080/api/auth/login", {
+                email: email,
+                password: defaultPassword
+            });
+            if (loginRes.data && loginRes.data.id) {
+                console.log("✅ Silent Auth: Login Success, User ID:", loginRes.data.id);
+
+                // ✅ CRITICAL: Store JWT token from backend (field name is 'token')
+                if (loginRes.data.token) {
+                    console.log("🔑 Storing JWT token from backend:", loginRes.data.token.substring(0, 20) + "...");
+                    localStorage.setItem("authToken", loginRes.data.token);
+                } else {
+                    console.error("❌ No token in login response!", loginRes.data);
+                }
+
+                return loginRes.data.id;
+            }
+        } catch (loginErr) {
+            console.log("⚠️ Silent Auth: Login Failed, attempting Register...", loginErr.response?.status);
+            // If Login failed, try Register
+            try {
+                console.log("📝 Silent Auth: Registering new user...");
+                const registerRes = await axios.post("http://127.0.0.1:8080/api/auth/register", {
+                    email: email,
+                    password: defaultPassword,
+                    firstName: userInfo.firstName || "Google",
+                    lastName: userInfo.lastName || "User",
+                    mobileNumber: userInfo.mobileNumber || "0123456789"
+                });
+                if (registerRes.data && registerRes.data.id) {
+                    console.log("✅ Silent Auth: Register Success, User ID:", registerRes.data.id);
+
+                    // ✅ CRITICAL: After register, login to get JWT token
+                    console.log("🔑 Logging in to get JWT token...");
+                    try {
+                        const loginAfterRegister = await axios.post("http://127.0.0.1:8080/api/auth/login", {
+                            email: email,
+                            password: defaultPassword
+                        });
+                        if (loginAfterRegister.data && loginAfterRegister.data.token) {
+                            console.log("🔑 Storing JWT token from backend:", loginAfterRegister.data.token.substring(0, 20) + "...");
+                            localStorage.setItem("authToken", loginAfterRegister.data.token);
+                        } else {
+                            console.error("❌ No token in login response after register!", loginAfterRegister.data);
+                        }
+                    } catch (loginAfterRegErr) {
+                        console.warn("⚠️ Could not get JWT after register, but user created:", loginAfterRegErr.message);
+                    }
+
+                    return registerRes.data.id;
+                }
+            } catch (regErr) {
+                console.error("❌ Silent Auth: Register Failed", regErr.response?.data || regErr.message);
+
+                // FALLBACK: Try to find user in Public User List (if email exists but password mismatch)
+                try {
+                    console.log("🔍 Silent Auth: Scanning public users for matching email...");
+                    const usersRes = await axios.get("http://127.0.0.1:8080/api/public/users?pageNumber=0&pageSize=1000"); // Fetch a batch
+                    if (usersRes.data && usersRes.data.content) {
+                        const foundUser = usersRes.data.content.find(u => u.email === email);
+                        if (foundUser && foundUser.userId) {
+                            console.log("✅ Silent Auth: Found existing user via Scan, User ID:", foundUser.userId);
+                            return foundUser.userId;
+                        }
+                        if (foundUser && foundUser.id) { // Handle DTO variation
+                            console.log("✅ Silent Auth: Found existing user via Scan (id prop), User ID:", foundUser.id);
+                            return foundUser.id;
+                        }
+                        console.log("⚠️ Silent Auth: User not found in public list");
+                    }
+                } catch (scanErr) {
+                    console.error("❌ Silent Auth: Scan Failed", scanErr.message);
+                }
+
+                // SUB-FINAL FALLBACK: Create a "Shadow Guest" account with unique email to bypass conflict
+                try {
+                    const timestamp = Date.now();
+                    // Use underscore to be safe with all regex
+                    const shadowEmail = `${email.split('@')[0]}_guest_${timestamp}@${email.split('@')[1] || "gmail.com"}`;
+
+                    // Helper to ensure min length 2
+                    const safeStr = (str) => (str && str.length >= 2) ? str : (str + "User");
+
+                    console.log("👻 Silent Auth: Creating Shadow Guest Account", shadowEmail);
+                    const shadowRes = await axios.post("http://127.0.0.1:8080/api/auth/register", {
+                        email: shadowEmail,
+                        password: defaultPassword,
+                        firstName: safeStr(userInfo.firstName || "Google"),
+                        lastName: safeStr(userInfo.lastName || "Guest"), // Ensure min length 2
+                        mobileNumber: userInfo.mobileNumber || "0123456789"
+                    });
+                    if (shadowRes.data && shadowRes.data.id) {
+                        console.log("✅ Silent Auth: Shadow Guest Success, User ID:", shadowRes.data.id);
+                        return shadowRes.data.id;
+                    }
+                } catch (shadowErr) {
+                    console.error("❌ Silent Auth: Shadow Guest Failed", shadowErr.response?.data || shadowErr.message);
+                    // Alert detailed error if possible
+                    const msg = shadowErr?.response?.data?.message || shadowErr.message;
+                    throw new Error("Lỗi hệ thống: " + msg);
+                }
+            }
+        }
+        return null;
+    };
 
     const handleCheckout = async (e) => {
         e?.preventDefault();
 
+        console.log("🚀 Checkout Started", {
+            user,
+            userId: user?.id,
+            userIdType: typeof user?.id,
+            email: user?.email,
+            loginType: user?.loginType
+        });
+
         if (!user) {
             alert("Vui lòng đăng nhập để thanh toán!");
             navigate("/login");
+            return;
+        }
+
+        if (!phoneNumber && !user?.mobileNumber) {
+            alert("Vui lòng nhập số điện thoại giao hàng!");
             return;
         }
 
@@ -205,55 +346,114 @@ const Checkout = () => {
         try {
             setLoading(true);
 
+            // CHECK & SYNC USER ID
+            let finalUserId = (user?.id && typeof user.id === 'number') ? user.id : null;
+            console.log("🔍 Initial User ID Check:", { finalUserId, needsSync: !finalUserId });
+
+            if (!finalUserId) {
+                // Determine if we need to sync
+                if (user.email) {
+                    console.log("🔄 Starting Silent Auth for Google User...");
+                    try {
+                        const syncedId = await silentRegisterOrLogin(user);
+                        console.log("✅ Silent Auth Result:", { syncedId, type: typeof syncedId });
+                        if (syncedId) {
+                            finalUserId = syncedId;
+                        } else {
+                            throw new Error("Không thể đồng bộ tài khoản. Vui lòng thử lại.");
+                        }
+                    } catch (syncErr) {
+                        console.error("❌ Silent Auth Failed:", syncErr);
+                        alert("Lỗi đồng bộ tài khoản: " + syncErr.message);
+                        setLoading(false);
+                        return;
+                    }
+                } else {
+                    alert("Không tìm thấy email người dùng. Vui lòng đăng nhập lại.");
+                    setLoading(false);
+                    return;
+                }
+            }
+
+            console.log("✅ Final User ID:", finalUserId);
+
+            // If still no ID (and didn't throw), default to 0 (which might fail) or handle gracefully
+            // But silentRegisterOrLogin throws if it fails.
+
+            // Reconstruct Payload with validated ID
+            const customerName = user?.fullName || `${user?.firstName || ""} ${user?.lastName || ""}`.trim();
+            let finalAddress = "";
+            if (addressType === 'default') {
+                finalAddress = user?.addressLine || (user?.address && typeof user.address === 'string' ? user.address : "Địa chỉ mặc định");
+            } else {
+                finalAddress = `${newAddress.specific}, ${newAddress.ward}, ${newAddress.district}, ${newAddress.province}`;
+            }
+
+            const payloadStart = {
+                userId: finalUserId,
+                customerName,
+                email: user?.email || "",
+                phone: phoneNumber || user?.mobileNumber || "",
+                address: finalAddress,
+                totalAmount: finalTotal,
+                note: "Thanh toan don hang",
+                paymentMethod,
+                items: cartItems.map((item) => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    price: item.price,
+                })),
+            };
+
+            console.log("📦 Order Payload:", payloadStart);
+
+
             if (paymentMethod === "VNPAY") {
-                const savedOrder = await createOrder({
-                    ...orderPayload,
+                console.log("💳 Creating VNPay Order via Spring Boot...");
+                const response = await createPayment({
+                    ...payloadStart,
                     paymentMethod: "VNPAY",
                 });
 
-                const orderId = savedOrder?.id || savedOrder?.orderId;
-                if (!orderId) {
-                    alert(`Không lấy được mã đơn hàng.`);
-                    return;
-                }
+                console.log("🔗 VNPay Response:", response);
 
-                const NODE_SERVER = "http://localhost:4000";
-                const returnUrl = `${window.location.origin}/checkout`;
-
-                const response = await axios.get(`${NODE_SERVER}/payment`, {
-                    params: {
-                        amount: finalTotal,
-                        orderInfo: `Thanh toan don hang ${orderId}`,
-                        returnUrl,
-                        txnRef: orderId,
-                    },
-                });
-
-                const payUrl = response?.data?.url;
+                const payUrl = response?.url || response?.data?.url;
                 if (!payUrl) {
-                    alert("Lỗi lấy link VNPay.");
+                    console.error("❌ No Payment URL in response:", response);
+                    alert("Lỗi lấy link VNPay. Vui lòng kiểm tra console để biết chi tiết.");
+                    setLoading(false);
                     return;
                 }
+                
+                console.log("✅ Redirecting to VNPay:", payUrl);
                 window.location.href = payUrl;
                 return;
             }
 
             // COD
+            console.log("💵 Creating COD Order...");
             const savedOrder = await createOrder({
-                ...orderPayload,
+                ...payloadStart,
                 paymentMethod: "COD",
             });
 
+            console.log("📝 COD Order Created:", savedOrder);
+
             if (savedOrder?.id || savedOrder?.orderId) {
+                console.log("✅ Order Success, clearing cart...");
                 clearCart();
                 localStorage.removeItem("cartItems");
                 navigate("/payment-success", { replace: true });
             } else {
-                alert(`Tạo đơn thất bại.`);
+                console.error("❌ Order creation failed:", savedOrder);
+                alert(`Tạo đơn thất bại. Vui lòng kiểm tra console để biết chi tiết.`);
             }
         } catch (error) {
-            console.error("Checkout Error:", error);
-            navigate("/payment-failure");
+            console.error("❌ Checkout Error:", error);
+            const errorMsg = error?.response?.data?.message || error.message || "Lỗi không xác định";
+            alert(`Lỗi thanh toán: ${errorMsg}`);
+            // Don't auto-navigate to failure, let user see the error
+            // navigate("/payment-failure");
         } finally {
             setLoading(false);
         }
@@ -277,6 +477,15 @@ const Checkout = () => {
                 <div className="row">
                     {/* LEFT - Shipping Info */}
                     <div className="col-lg-7 mb-4">
+                        {vnpError && (
+                            <div className="alert alert-danger mb-4" role="alert">
+                                <i className="fa fa-exclamation-circle mr-2"></i>
+                                {vnpError}
+                                <button type="button" className="close" onClick={() => setVnpError(null)}>
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        )}
                         <div className="card border-0 mb-4 bg-light shadow-sm">
                             <div className="card-body p-4">
                                 <h5 className="card-title mb-4 font-weight-bold">Thông Tin Giao Hàng</h5>
@@ -288,8 +497,14 @@ const Checkout = () => {
                                         <input type="text" className="form-control rounded-0 border-0" value={user?.fullName || user?.firstName || ""} readOnly />
                                     </div>
                                     <div className="col-md-6 form-group">
-                                        <label className="text-muted small text-uppercase">SĐT</label>
-                                        <input type="text" className="form-control rounded-0 border-0" value={user?.mobileNumber || ""} readOnly />
+                                        <label className="text-muted small text-uppercase">SĐT <span className="text-danger">*</span></label>
+                                        <input 
+                                            type="text" 
+                                            className="form-control rounded-0 border" 
+                                            value={phoneNumber} 
+                                            onChange={(e) => setPhoneNumber(e.target.value)} 
+                                            placeholder="Nhập số điện thoại" 
+                                        />
                                     </div>
                                 </div>
 

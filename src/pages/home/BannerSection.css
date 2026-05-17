@@ -1,0 +1,292 @@
+/* Banner Carousel Container */
+.banner-carousel-section {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.banner-carousel-container {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.banner-carousel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Banner Slides */
+.banner-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    z-index: 1;
+}
+
+.banner-slide.active {
+    opacity: 1;
+    z-index: 2;
+}
+
+.banner-slide .card {
+    height: 100%;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.banner-slide .card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 8s ease-out;
+}
+
+.banner-slide.active .card-img {
+    transform: scale(1.1);
+}
+
+.banner-slide .card-img-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to right,
+            rgba(0, 0, 0, 0.7) 0%,
+            rgba(0, 0, 0, 0.3) 50%,
+            transparent 100%);
+}
+
+/* Banner Content */
+.banner-content {
+    max-width: 600px;
+    padding: 40px;
+    transform: translateX(-50px);
+    opacity: 0;
+    transition: all 0.8s ease-out 0.3s;
+}
+
+.banner-slide.active .banner-content {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.banner-content .card-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+    line-height: 1.2;
+}
+
+.banner-content .card-text {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+    line-height: 1.6;
+}
+
+.banner-content .btn {
+    padding: 12px 35px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.banner-content .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Carousel Controls */
+.carousel-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-control:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.carousel-control.prev {
+    left: 20px;
+}
+
+.carousel-control.next {
+    right: 20px;
+}
+
+.carousel-control i {
+    font-size: 1.2rem;
+    color: #333;
+}
+
+/* Carousel Indicators */
+.carousel-indicators {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.carousel-indicators .indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.carousel-indicators .indicator:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: scale(1.2);
+}
+
+.carousel-indicators .indicator.active {
+    background: rgba(255, 255, 255, 1);
+    width: 30px;
+    border-radius: 6px;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .banner-carousel-container {
+        height: 400px;
+    }
+
+    .banner-content .card-title {
+        font-size: 2.2rem;
+    }
+
+    .banner-content .card-text {
+        font-size: 1rem;
+    }
+
+    .banner-content {
+        padding: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .banner-carousel-container {
+        height: 350px;
+    }
+
+    .banner-content .card-title {
+        font-size: 1.8rem;
+    }
+
+    .banner-content .card-text {
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+    }
+
+    .banner-content .btn {
+        padding: 10px 25px;
+        font-size: 0.95rem;
+    }
+
+    .banner-content {
+        padding: 20px;
+        max-width: 90%;
+    }
+
+    .carousel-control {
+        width: 40px;
+        height: 40px;
+    }
+
+    .carousel-control.prev {
+        left: 10px;
+    }
+
+    .carousel-control.next {
+        right: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .banner-carousel-container {
+        height: 300px;
+    }
+
+    .banner-content .card-title {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+
+    .banner-content .card-text {
+        font-size: 0.85rem;
+        margin-bottom: 15px;
+    }
+
+    .banner-content .btn {
+        padding: 8px 20px;
+        font-size: 0.85rem;
+    }
+
+    .carousel-indicators .indicator {
+        width: 8px;
+        height: 8px;
+    }
+
+    .carousel-indicators .indicator.active {
+        width: 20px;
+    }
+}
+
+/* Animation Classes */
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

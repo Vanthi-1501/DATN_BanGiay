@@ -1,3 +1,64 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getProductById } from '../../services/apiService';
@@ -11,7 +72,15 @@ const ProductDetail = () => {
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
     const [selectedSize, setSelectedSize] = useState("40");
+    const [selectedColor, setSelectedColor] = useState("Trắng");
+    const [selectedImg, setSelectedImg] = useState(null);
+
     const sizes = ["38", "39", "40", "41", "42", "43"];
+    const colors = [
+        { name: "Trắng", code: "#ffffff", border: "#dee2e6" },
+        { name: "Đen", code: "#000000", border: "#000000" },
+        { name: "Đỏ", code: "#ff0000", border: "#ff0000" }
+    ];
 
     useEffect(() => {
         if (!productId) return;
@@ -31,13 +100,18 @@ const ProductDetail = () => {
 
     useEffect(() => {
         if (product && product.image) {
+            let url;
             if (product.image.startsWith('http')) {
-                setImgSrc(product.image);
+                url = product.image;
             } else {
-                setImgSrc(`http://localhost:8080/api/public/products/image/${product.image}`);
+                url = `http://localhost:8080/api/public/products/image/${product.image}`;
             }
+            setImgSrc(url);
+            setSelectedImg(url);
         } else {
-            setImgSrc("https://via.placeholder.com/300");
+            const fallback = "https://via.placeholder.com/300";
+            setImgSrc(fallback);
+            setSelectedImg(fallback);
         }
     }, [product]);
 
@@ -55,7 +129,9 @@ const ProductDetail = () => {
             productId: product.productId || product.id,
             name: name,
             price: currentPrice,
-            image: product.image
+            image: product.image,
+            color: selectedColor,
+            size: selectedSize
         };
         addToCart(productToAdd, quantity, selectedSize);
     };
@@ -82,32 +158,45 @@ const ProductDetail = () => {
                                     textAlign: 'center'
                                 }}>
                                     <img
-                                        src={imgSrc}
+                                        src={selectedImg || imgSrc}
                                         alt={name}
                                         className="img-fluid drop-shadow"
                                         style={{
                                             maxWidth: '100%',
+                                            maxHeight: '400px',
                                             transform: 'rotate(-10deg)',
                                             filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.15))',
-                                            transition: 'transform 0.3s ease'
+                                            transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
                                         }}
                                         onMouseOver={e => e.currentTarget.style.transform = 'rotate(0deg) scale(1.05)'}
                                         onMouseOut={e => e.currentTarget.style.transform = 'rotate(-10deg)'}
-                                        onError={() => setImgSrc("https://placehold.co/500x500?text=No+Image")}
+                                        onError={() => setSelectedImg("https://placehold.co/500x500?text=No+Image")}
                                     />
                                 </div>
                                 <div className="thumbs-wrap mt-3 d-flex justify-content-center gap-2">
-                                    {/* Mock thumbnails */}
-                                    {[1, 2, 3].map(i => (
-                                        <div key={i} className="item-thumb" style={{
-                                            width: '80px',
-                                            height: '80px',
-                                            border: '1px solid #dee2e6',
-                                            borderRadius: '10px',
-                                            padding: '10px',
-                                            cursor: 'pointer'
-                                        }}>
-                                            <img src={imgSrc} className="img-fluid" alt="" />
+                                    {[
+                                        imgSrc,
+                                        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=300&h=300",
+                                        "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&q=80&w=300&h=300",
+                                        "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&q=80&w=300&h=300"
+                                    ].map((img, i) => (
+                                        <div key={i} 
+                                             className={`item-thumb ${selectedImg === img ? 'border-dark' : ''}`}
+                                             onClick={() => setSelectedImg(img)}
+                                             style={{
+                                                width: '80px',
+                                                height: '80px',
+                                                border: selectedImg === img ? '2px solid #000' : '1px solid #dee2e6',
+                                                borderRadius: '12px',
+                                                padding: '8px',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease',
+                                                backgroundColor: '#fff',
+                                                opacity: selectedImg === img ? 1 : 0.7
+                                             }}
+                                             onMouseOver={e => e.currentTarget.style.opacity = 1}
+                                             onMouseOut={e => { if(selectedImg !== img) e.currentTarget.style.opacity = 0.7 }}>
+                                            <img src={img} className="img-fluid h-100 w-100" style={{ objectFit: 'contain' }} alt="" />
                                         </div>
                                     ))}
                                 </div>
@@ -175,6 +264,30 @@ const ProductDetail = () => {
                                     ))}
                                 </div>
                             </div>
+ 
+                             {/* Color Selection */}
+                             <div className="form-group mb-4">
+                                 <label className="font-weight-bold">Chọn Màu: <span className="text-muted font-weight-normal">{selectedColor}</span></label>
+                                 <div className="d-flex mt-2" style={{ gap: '15px' }}>
+                                     {colors.map(color => (
+                                         <div
+                                             key={color.name}
+                                             onClick={() => setSelectedColor(color.name)}
+                                             style={{
+                                                 width: '35px',
+                                                 height: '35px',
+                                                 borderRadius: '50%',
+                                                 backgroundColor: color.code,
+                                                 border: selectedColor === color.name ? '2px solid #000' : `1px solid ${color.border}`,
+                                                 cursor: 'pointer',
+                                                 boxShadow: selectedColor === color.name ? '0 0 0 2px #fff, 0 0 0 4px #000' : 'none',
+                                                 transition: 'all 0.2s ease'
+                                             }}
+                                             title={color.name}
+                                         />
+                                     ))}
+                                 </div>
+                             </div>
 
                             <div className="form-group mb-4">
                                 <button className="btn btn-dark btn-block btn-lg rounded-0 py-3 shadow-lg" onClick={handleAddToCart}>

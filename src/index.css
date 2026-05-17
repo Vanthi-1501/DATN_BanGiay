@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
@@ -18,6 +22,8 @@
 
   --bg-body: #ffffff;
   --bg-surface: #ffffff;
+  --bg-footer: #f8f9fa;
+  --bg-newsletter: #f1f3f5;
   /* Light Gray Surface */
   --bg-surface-hover: #eeeeee;
 

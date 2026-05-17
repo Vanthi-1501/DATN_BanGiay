@@ -59,19 +59,19 @@ const ListingGrid = () => {
                                 <ul className="list-inline">
                                     <li className="list-inline-item">
                                         <div className="dropdown">
-                                            <a href="#" className="dropdown-toggle" data-toggle="dropdown">   Nhà cung cấp </a>
+                                            <a href="#!" className="dropdown-toggle" data-toggle="dropdown" onClick={(e) => e.preventDefault()}>   Nhà cung cấp </a>
                                             <div className="dropdown-menu">
-                                                <a href="#" className="dropdown-item">Tùy chọn 1</a>
-                                                <a href="#" className="dropdown-item">Tùy chọn 2</a>
+                                                <a href="#!" className="dropdown-item" onClick={(e) => e.preventDefault()}>Tùy chọn 1</a>
+                                                <a href="#!" className="dropdown-item" onClick={(e) => e.preventDefault()}>Tùy chọn 2</a>
                                             </div>
                                         </div>
                                     </li>
                                     <li className="list-inline-item">
                                         <div className="dropdown">
-                                            <a href="#" className="dropdown-toggle" data-toggle="dropdown">Tính năng</a>
+                                            <a href="#!" className="dropdown-toggle" data-toggle="dropdown" onClick={(e) => e.preventDefault()}>Tính năng</a>
                                             <div className="dropdown-menu">
-                                                <a href="#" className="dropdown-item">Tùy chọn 1</a>
-                                                <a href="#" className="dropdown-item">Tùy chọn 2</a>
+                                                <a href="#!" className="dropdown-item" onClick={(e) => e.preventDefault()}>Tùy chọn 1</a>
+                                                <a href="#!" className="dropdown-item" onClick={(e) => e.preventDefault()}>Tùy chọn 2</a>
                                             </div>
                                         </div>
                                     </li>
@@ -118,7 +118,7 @@ const ListingGrid = () => {
                                     <figure className="card card-product-grid">
                                         <div className="img-wrap">
                                             {/* {index === 0 && <span className="badge badge-danger"> NEW </span>} */}
-                                            <img src={imageSrc} alt={product.productName} style={{ objectFit: 'contain' }} />
+                                            <img src={imageSrc} alt={product.productName} style={{ objectFit: 'cover' }} />
                                         </div>
                                         <figcaption className="info-wrap">
                                             <Link to={`/product-detail/${product.productId || product.id}`} className="title mb-2">{product.productName}</Link>
@@ -145,13 +145,13 @@ const ListingGrid = () => {
 
                 <nav className="mb-4" aria-label="Page navigation sample">
                     <ul className="pagination">
-                        <li className="page-item disabled"><Link className="page-link" to="#">Previous</Link></li>
-                        <li className="page-item active"><Link className="page-link" to="#">1</Link></li>
-                        <li className="page-item"><Link className="page-link" to="#">2</Link></li>
-                        <li className="page-item"><Link className="page-link" to="#">3</Link></li>
-                        <li className="page-item"><Link className="page-link" to="#">4</Link></li>
-                        <li className="page-item"><Link className="page-link" to="#">5</Link></li>
-                        <li className="page-item"><Link className="page-link" to="#">Next</Link></li>
+                        <li className="page-item disabled"><Link className="page-link" to="#!" onClick={(e) => e.preventDefault()}>Previous</Link></li>
+                        <li className="page-item active"><Link className="page-link" to="#!" onClick={(e) => e.preventDefault()}>1</Link></li>
+                        <li className="page-item"><Link className="page-link" to="#!" onClick={(e) => e.preventDefault()}>2</Link></li>
+                        <li className="page-item"><Link className="page-link" to="#!" onClick={(e) => e.preventDefault()}>3</Link></li>
+                        <li className="page-item"><Link className="page-link" to="#!" onClick={(e) => e.preventDefault()}>4</Link></li>
+                        <li className="page-item"><Link className="page-link" to="#!" onClick={(e) => e.preventDefault()}>5</Link></li>
+                        <li className="page-item"><Link className="page-link" to="#!" onClick={(e) => e.preventDefault()}>Next</Link></li>
                     </ul>
                 </nav>
 

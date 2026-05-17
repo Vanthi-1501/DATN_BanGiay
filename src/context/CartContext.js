@@ -8,7 +8,29 @@ export const CartProvider = ({ children }) => {
     useEffect(() => {
         const savedCart = localStorage.getItem("cartItems");
         if (savedCart) {
-            setCartItems(JSON.parse(savedCart));
+            try {
+                const parsed = JSON.parse(savedCart);
+
+                // ✅ Validate cart items - clear if invalid
+                const isValid = Array.isArray(parsed) && parsed.every(item =>
+                    item.productId &&
+                    item.price &&
+                    item.quantity &&
+                    item.productId < 1000 // Prevent very old/invalid IDs
+                );
+
+                if (isValid) {
+                    setCartItems(parsed);
+                } else {
+                    console.warn("⚠️ Invalid cart data detected, clearing cart...");
+                    localStorage.removeItem("cartItems");
+                    setCartItems([]);
+                }
+            } catch (error) {
+                console.error("❌ Error loading cart, clearing...", error);
+                localStorage.removeItem("cartItems");
+                setCartItems([]);
+            }
         }
     }, []);
 
