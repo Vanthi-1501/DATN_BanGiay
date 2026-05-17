@@ -78,7 +78,7 @@ const OrderDetail = () => {
                                             <td style={{ verticalAlign: 'middle' }}>
                                                 <div className="d-flex align-items-center">
                                                     <img
-                                                        src={item.product?.imageName && item.product.imageName.startsWith('http') ? item.product.imageName : `http://localhost:8080/api/public/products/image/${item.product?.imageName}`}
+                                                        src={item.product?.imageName && item.product.imageName.startsWith('http') ? item.product.imageName : `${process.env.REACT_APP_API_BASE_URL}/api/public/products/image/${item.product?.imageName}`}
                                                         alt=""
                                                         style={{ width: '50px', height: '50px', objectFit: 'contain', marginRight: '15px' }}
                                                     />

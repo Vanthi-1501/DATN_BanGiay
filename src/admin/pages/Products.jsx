@@ -221,7 +221,7 @@ const Products = () => {
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
                           {product.image ? (
-                            <img src={product.image.startsWith('http') ? product.image : `http://localhost:8080/api/public/products/image/${product.image}`} alt={product.productName} className="w-full h-full object-cover" />
+                            <img src={product.image.startsWith('http') ? product.image : `${process.env.REACT_APP_API_BASE_URL}/api/public/products/image/${product.image}`} alt={product.productName} className="w-full h-full object-cover" />
                           ) : (
                             <Package size={20} className="text-gray-400" />
                           )}
@@ -393,7 +393,7 @@ const Products = () => {
                       </div>
                     ) : editingProduct?.image ? (
                       <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-200">
-                        <img src={editingProduct.image.startsWith('http') ? editingProduct.image : `http://localhost:8080/api/public/products/image/${editingProduct.image}`} alt="Current" className="w-full h-full object-cover" />
+                        <img src={editingProduct.image.startsWith('http') ? editingProduct.image : `${process.env.REACT_APP_API_BASE_URL}/api/public/products/image/${editingProduct.image}`} alt="Current" className="w-full h-full object-cover" />
                       </div>
                     ) : null}
                   </div>

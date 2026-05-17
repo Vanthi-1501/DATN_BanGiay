@@ -43,7 +43,7 @@ const Cart = () => {
                                         if (item.image.startsWith('http')) {
                                             imageUrl = item.image;
                                         } else {
-                                            imageUrl = `http://localhost:8080/api/public/products/image/${item.image}`;
+                                            imageUrl = `${process.env.REACT_APP_API_BASE_URL}/api/public/products/image/${item.image}`;
                                         }
                                     }
 

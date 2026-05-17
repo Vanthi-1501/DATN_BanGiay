@@ -14,7 +14,7 @@ const ProductItem = ({ product }) => {
         if (product.image.startsWith('http')) {
             imageStart = product.image;
         } else {
-            imageStart = `http://localhost:8080/api/public/products/image/${product.image}`;
+            imageStart = `${process.env.REACT_APP_API_BASE_URL}/api/public/products/image/${product.image}`;
         }
     }
 

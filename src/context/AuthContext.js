@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
                 // Need to sync with backend to get JWT
                 console.log("🔄 Syncing Clerk user with backend to get JWT...");
                 try {
-                    const response = await fetch('http://localhost:8080/api/auth/google-sync', {
+                    const response = await fetch(process.env.REACT_APP_API_BASE_URL + '/api/auth/google-sync', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

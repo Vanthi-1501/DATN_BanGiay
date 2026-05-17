@@ -109,7 +109,7 @@ const ListingGrid = () => {
                                 if (product.image.startsWith('http')) {
                                     imageSrc = product.image;
                                 } else {
-                                    imageSrc = `http://localhost:8080/api/public/products/image/${product.image}`;
+                                    imageSrc = `${process.env.REACT_APP_API_BASE_URL}/api/public/products/image/${product.image}`;
                                 }
                             }
 

@@ -24,7 +24,7 @@ const CategoryItem = ({ category }) => {
         if (category.image.startsWith("http")) {
             imageUrl = category.image;
         } else {
-            imageUrl = `http://localhost:8080/api/public/categories/image/${category.image}`;
+            imageUrl = `${process.env.REACT_APP_API_BASE_URL}/api/public/categories/image/${category.image}`;
         }
     }
 

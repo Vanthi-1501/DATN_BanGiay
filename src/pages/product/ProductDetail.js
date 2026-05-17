@@ -104,7 +104,7 @@ const ProductDetail = () => {
             if (product.image.startsWith('http')) {
                 url = product.image;
             } else {
-                url = `http://localhost:8080/api/public/products/image/${product.image}`;
+                url = `${process.env.REACT_APP_API_BASE_URL}/api/public/products/image/${product.image}`;
             }
             setImgSrc(url);
             setSelectedImg(url);

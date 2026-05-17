@@ -640,7 +640,7 @@ const Checkout = () => {
                                             <div className="position-relative mr-3">
                                                 <span className="badge badge-secondary rounded-circle position-absolute" style={{ top: '-5px', right: '-5px', fontSize: '10px' }}>{item.quantity}</span>
                                                 <img
-                                                    src={item.image && item.image.startsWith('http') ? item.image : `http://localhost:8080/api/public/products/image/${item.image}`}
+                                                    src={item.image && item.image.startsWith('http') ? item.image : `${process.env.REACT_APP_API_BASE_URL}/api/public/products/image/${item.image}`}
                                                     alt=""
                                                     style={{ width: '50px', height: '50px', objectFit: 'contain', background: '#fff' }}
                                                 />
