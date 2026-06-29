@@ -88,6 +88,33 @@ const Login = () => {
         }
     };
 
+    const handleFacebookLogin = async () => {
+        console.log("Facebook Login Clicked. Clerk Loaded:", isLoaded);
+        if (!isLoaded) {
+            setError("Hệ thống đăng nhập chưa sẵn sàng. Vui lòng thử lại hoặc kiểm tra kết nối mạng.");
+            return;
+        }
+        try {
+            console.log("Initiating redirect to Facebook...");
+            await signIn.authenticateWithRedirect({
+                strategy: "oauth_facebook",
+                redirectUrl: "/sso-callback",
+                redirectUrlComplete: "/"
+            });
+        } catch (err) {
+            console.error("Facebook Login Error:", err);
+            if (err.errors && err.errors.find(e => e.code === "session_exists")) {
+                navigate("/");
+                return;
+            }
+            if (err.message && err.message.includes("already signed in")) {
+                navigate("/");
+                return;
+            }
+            setError("Lỗi đăng nhập Facebook: " + err.message);
+        }
+    };
+
     return (
         <section className="section-content padding-y" style={{ minHeight: "84vh", background: "var(--bg-body)" }}>
             <div className="card mx-auto shadow-sm border-0" style={{ maxWidth: 380, marginTop: 100, borderRadius: "var(--radius-lg)" }}>
@@ -143,6 +170,26 @@ const Login = () => {
                     >
                         <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google" className="mr-2" />
                         Đăng nhập bằng Google
+                    </button>
+
+                    <button
+                        type="button"
+                        className="btn btn-facebook btn-block shadow-sm border mt-2"
+                        style={{ 
+                            height: '45px', 
+                            borderRadius: 'var(--radius-md)', 
+                            backgroundColor: '#1877F2', 
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: '500',
+                            border: 'none'
+                        }}
+                        onClick={handleFacebookLogin}
+                    >
+                        <img src="https://img.icons8.com/ios-filled/16/ffffff/facebook-new.png" alt="Facebook" className="mr-2" />
+                        Đăng nhập bằng Facebook
                     </button>
                 </div>
             </div >

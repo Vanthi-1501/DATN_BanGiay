@@ -613,7 +613,7 @@ const Checkout = () => {
                                         <i className="fa fa-money text-muted fa-lg"></i>
                                     </label>
 
-                                    <label className={`custom-control custom-radio border p-3 rounded bg-white d-flex align-items-center justify-content-between cursor-pointer ${paymentMethod === "VNPAY" ? 'border-primary' : ''}`}>
+                                    <label className={`custom-control custom-radio border p-3 rounded bg-white d-flex align-items-center justify-content-between cursor-pointer ${paymentMethod === "VNPAY" ? "border-primary" : ""}`} style={{ minHeight: "60px" }}>
                                         <div className="d-flex align-items-center">
                                             <input
                                                 type="radio" name="paymentDetails" className="custom-control-input"
@@ -622,7 +622,11 @@ const Checkout = () => {
                                             />
                                             <span className="custom-control-label font-weight-bold ml-3">Ví điện tử VNPay</span>
                                         </div>
-                                        <img src="https://vnpay.vn/assets/images/logo-icon/logo-primary.svg" height="24" alt="VNPay" />
+                                        <img 
+                                            src="https://vnpay.vn/assets/images/logo-icon/logo-primary.svg" 
+                                            alt="VNPay" 
+                                            style={{ height: "24px", width: "auto", maxWidth: "120px", objectFit: "contain", display: "block" }} 
+                                        />
                                     </label>
                                 </div>
                             </div>

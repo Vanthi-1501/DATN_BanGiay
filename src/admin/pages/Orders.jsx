@@ -1,17 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, Filter, Edit } from 'lucide-react';
+import { Search, Eye, Filter, Edit, Trash2 } from 'lucide-react';
 import axiosInstance from '../../services/axiosConfig';
+import { useOutletContext } from 'react-router-dom';
 
 const Orders = () => {
+  const { newOrderTrigger } = useOutletContext() || {};
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedOrderIds, setSelectedOrderIds] = useState([]);
+
+  // Tự động tải lại danh sách khi có thông báo đơn hàng mới
+  useEffect(() => {
+    if (newOrderTrigger) {
+      fetchOrders();
+    }
+  }, [newOrderTrigger]);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get('/admin/orders?pageSize=100'); // Fetch more for admin
-      setOrders(response.data.content || response.data || []);
+      const response = await axiosInstance.get('/admin/orders?pageSize=100&sortBy=orderId&sortOrder=desc'); // Fetch more for admin, sort newest first
+      const fetchedOrders = response.data.content || response.data || [];
+      // Sắp xếp dự phòng ở frontend để đảm bảo hiển thị đơn hàng mới nhất lên trên cùng
+      const sortedOrders = [...fetchedOrders].sort((a, b) => b.orderId - a.orderId);
+      setOrders(sortedOrders);
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
@@ -51,6 +64,40 @@ const Orders = () => {
     }
   };
 
+  const handleDeleteOrder = async (orderId) => {
+    if (window.confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN đơn hàng #${orderId}? Thao tác này sẽ xóa sạch bản ghi và không thể hoàn tác!`)) {
+      try {
+        await axiosInstance.delete(`/admin/orders/${orderId}`);
+        alert("Đã xóa đơn hàng thành công!");
+        setSelectedOrderIds(prev => prev.filter(id => id !== orderId));
+        fetchOrders();
+      } catch (error) {
+        console.error("Lỗi khi xóa đơn hàng:", error);
+        alert("Lỗi khi xóa đơn hàng!");
+      }
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    const count = selectedOrderIds.length;
+    if (window.confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN ${count} đơn hàng đã chọn? Hành động này sẽ xóa vĩnh viễn và không thể khôi phục!`)) {
+      try {
+        setLoading(true);
+        // Gửi song song các yêu cầu xóa
+        await Promise.all(selectedOrderIds.map(id => axiosInstance.delete(`/admin/orders/${id}`)));
+        alert(`Đã xóa thành công ${count} đơn hàng!`);
+        setSelectedOrderIds([]);
+        fetchOrders();
+      } catch (error) {
+        console.error("Lỗi khi xóa hàng loạt đơn hàng:", error);
+        alert("Có lỗi xảy ra trong quá trình xóa một số đơn hàng!");
+        fetchOrders();
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   const getStatusColor = (status) => {
     const s = status?.toUpperCase();
     switch (s) {
@@ -76,6 +123,24 @@ const Orders = () => {
     );
   });
 
+  const isAllSelected = filteredOrders.length > 0 && selectedOrderIds.length === filteredOrders.length;
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedOrderIds(filteredOrders.map(o => o.orderId));
+    } else {
+      setSelectedOrderIds([]);
+    }
+  };
+
+  const handleSelectOrder = (orderId) => {
+    setSelectedOrderIds(prev => 
+      prev.includes(orderId) 
+        ? prev.filter(id => id !== orderId) 
+        : [...prev, orderId]
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -97,16 +162,36 @@ const Orders = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="flex items-center gap-2 text-gray-600 hover:text-black px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white transition-colors">
-            <Filter size={16} />
-            Lọc & Sắp xếp
-          </button>
+
+          <div className="flex items-center gap-3">
+            {selectedOrderIds.length > 0 && (
+              <button 
+                onClick={handleDeleteSelected}
+                className="flex items-center gap-2 text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm transition-all shadow-sm font-semibold hover:scale-105 active:scale-95 animate-pulse"
+              >
+                <Trash2 size={16} />
+                Xóa đã chọn ({selectedOrderIds.length})
+              </button>
+            )}
+            <button className="flex items-center gap-2 text-gray-600 hover:text-black px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white transition-colors">
+              <Filter size={16} />
+              Lọc & Sắp xếp
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b">
+                <th className="p-4 w-12 text-center">
+                  <input 
+                    type="checkbox" 
+                    checked={isAllSelected}
+                    onChange={handleSelectAll}
+                    className="rounded border-gray-300 text-black focus:ring-black cursor-pointer w-4 h-4 animate-scale-in"
+                  />
+                </th>
                 <th className="p-4 font-medium">Mã Đơn</th>
                 <th className="p-4 font-medium">Ngày Đặt</th>
                 <th className="p-4 font-medium">Khách Hàng</th>
@@ -117,11 +202,19 @@ const Orders = () => {
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
               {loading ? (
-                <tr><td colSpan="6" className="p-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
+                <tr><td colSpan="7" className="p-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
               ) : filteredOrders.length === 0 ? (
-                <tr><td colSpan="6" className="p-8 text-center text-gray-500">Không tìm thấy đơn hàng nào.</td></tr>
+                <tr><td colSpan="7" className="p-8 text-center text-gray-500">Không tìm thấy đơn hàng nào.</td></tr>
               ) : filteredOrders.map((order) => (
-                <tr key={order.orderId} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={order.orderId} className={`hover:bg-gray-50/50 transition-colors ${selectedOrderIds.includes(order.orderId) ? 'bg-red-50/10' : ''}`}>
+                  <td className="p-4 w-12 text-center">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedOrderIds.includes(order.orderId)}
+                      onChange={() => handleSelectOrder(order.orderId)}
+                      className="rounded border-gray-300 text-black focus:ring-black cursor-pointer w-4 h-4"
+                    />
+                  </td>
                   <td className="p-4 font-bold text-gray-900">#{order.orderId}</td>
                   <td className="p-4 text-gray-600">
                     {order.orderDate ? new Date(order.orderDate).toLocaleDateString('vi-VN') : 'N/A'}
@@ -150,9 +243,15 @@ const Orders = () => {
                       <button 
                         onClick={() => handleCancelOrder(order.orderId)}
                         disabled={order.orderStatus === 'CANCELLED' || order.orderStatus === 'DELIVERED'}
-                        className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Hủy
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteOrder(order.orderId)}
+                        className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                      >
+                        Xóa
                       </button>
                     </div>
                   </td>
